@@ -7,7 +7,6 @@ export interface Product {
   category2: string;
   category3: string;
   category4: string;
-  initials: string;
 }
 
 export const API_URL_PRODUCT = `${BASE_URL}/products`;

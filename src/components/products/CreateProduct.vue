@@ -7,36 +7,61 @@
     </div>
 
     <div v-else>
-      <div v-if="filteredInitialsList.length == 0 && filteredProductsList.length == 0"
-        class="flex flex-wrap justify-center gap-4">
-        <Button style="margin-left: 5px; margin-bottom: 5px; width: 30px; height: 30px;" v-for="initial in initialsList"
-          :key="initial" severity="secondary" size="small" v-on:click="filterInitial(initial)">
-          {{ initial }}
+      <div v-if="selectedCategory1 === ''" class="flex flex-wrap justify-center gap-4">
+        <Button style="margin-left: 5px; margin-bottom: 5px;" v-for="category1 in filteredCategory1List"
+          :key="category1" severity="secondary" size="small" v-on:click="selectCategory1(category1)">
+          {{ category1 }}
         </Button>
       </div>
-      <div v-else-if="filteredProductsList.length == 0" class="flex flex-wrap justify-center items-center gap-4">
+      <div v-else-if="selectedCategory2 === ''" class="flex flex-wrap justify-center items-center gap-4">
         <Button
           style="display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; padding: 0; margin-left: 5px; margin-bottom: 5px; width: 50px; height: 30px;"
-          v-for="initial in filteredInitialsList" :key="initial" severity="secondary" size="small"
-          v-on:click="filterProducts(initial)">
-          {{ initial }}
+          v-for="category2 in filteredCategory2List" :key="category2" severity="secondary" size="small"
+          v-on:click="selectCategory2(category2)">
+          {{ category2 }}
         </Button>
         <Button
           style="display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; padding: 0; margin-left: 5px; margin-bottom: 5px; width: 50px; height: 30px; line-height: 1;"
-          severity="danger" size="small" v-on:click="cancelFilteredInitialsList">
+          severity="danger" size="small" v-on:click="cancelCategory1">
           <i class="pi pi-times" style="margin: 0; padding: 0; line-height: 1;"></i>
         </Button>
       </div>
-      <div v-else-if="selectedProduct == null || (filteredProductsList.length > 0 && selectedProduct == null)">
+      <div v-else-if="selectedCategory3 === ''" class="flex flex-wrap justify-center items-center gap-4">
         <Button
-          style="display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; padding: 0; margin-left: 5px; margin-bottom: 5px; padding-left: 5px; padding-right: 5px; height: 30px;"
-          v-for="cust in filteredProductsList" :key="cust.id" severity="secondary" size="small"
-          v-on:click="selectProduct(cust)">
-          {{ cust.name }}
+          style="display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; padding: 0; margin-left: 5px; margin-bottom: 5px; width: 50px; height: 30px;"
+          v-for="category3 in filteredCategory3List" :key="category3" severity="secondary" size="small"
+          v-on:click="selectCategory3(category3)">
+          {{ category3 }}
         </Button>
         <Button
           style="display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; padding: 0; margin-left: 5px; margin-bottom: 5px; width: 50px; height: 30px; line-height: 1;"
-          severity="danger" size="small" v-on:click="cancelFilteredProductsList">
+          severity="danger" size="small" v-on:click="cancelCategory2">
+          <i class="pi pi-times" style="margin: 0; padding: 0; line-height: 1;"></i>
+        </Button>
+      </div>
+      <div v-else class="flex flex-wrap justify-center items-center gap-4">
+        <Button
+          style="display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; padding: 0; margin-left: 5px; margin-bottom: 5px; width: 50px; height: 30px;"
+          v-for="category4 in filteredCategory4List" :key="category4" severity="secondary" size="small"
+          v-on:click="selectCategory4(category4)">
+          {{ category4 }}
+        </Button>
+        <Button
+          style="display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; padding: 0; margin-left: 5px; margin-bottom: 5px; width: 50px; height: 30px; line-height: 1;"
+          severity="danger" size="small" v-on:click="cancelCategory3">
+          <i class="pi pi-times" style="margin: 0; padding: 0; line-height: 1;"></i>
+        </Button>
+      </div>
+      <div v-if="selectedProduct == null || (filteredProductsList.length > 0 && selectedProduct == null)">
+        <Button
+          style="display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; padding: 0; margin-left: 5px; margin-bottom: 5px; padding-left: 5px; padding-right: 5px; height: 30px;"
+          v-for="product in filteredProductsList" :key="product.id" severity="secondary" size="small"
+          v-on:click="selectProduct(product)">
+          {{ product.name }}
+        </Button>
+        <Button
+          style="display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; padding: 0; margin-left: 5px; margin-bottom: 5px; width: 50px; height: 30px; line-height: 1;"
+          severity="danger" size="small" v-on:click="cancelCategory4">
           <i class="pi pi-times" style="margin: 0; padding: 0; line-height: 1;"></i>
         </Button>
       </div>
@@ -83,8 +108,14 @@ const toast = useToast();
 const authStore = useAuthStore();
 
 const productsList = ref<Product[]>([]);
-const initialsList = ref<string[]>([]);
-const filteredInitialsList = ref<string[]>([]);
+const filteredCategory1List = ref<string[]>([]);
+const filteredCategory2List = ref<string[]>([]);
+const filteredCategory3List = ref<string[]>([]);
+const filteredCategory4List = ref<string[]>([]);
+const selectedCategory1 = ref("");
+const selectedCategory2 = ref("");
+const selectedCategory3 = ref("");
+const selectedCategory4 = ref("");
 const filteredProductsList = ref<Product[]>([]);
 const selectedProduct = ref<Product | null>(null);
 const newProductName = ref("");
@@ -110,22 +141,54 @@ watch(newProductName, (newName: string) => {
     filteredProductsList.value = [];
   }
 })
-function filterInitial(initial: string) {
-  filteredInitialsList.value = [...new Set(productsList.value.filter(x => x.initials.startsWith(initial)).map(x => x.initials))];
+function selectCategory1(category: string) {
+  selectedCategory1.value = category;
+  filteredCategory2List.value = [...new Set(productsList.value.filter(x => x.category1 === category).map(x => x.category2))];
+  if (filteredCategory2List.value.length === 0) {
+    filteredProductsList.value = productsList.value.filter(x => x.category1 === selectedCategory1.value);
+  }
 }
-function cancelFilteredInitialsList() {
-  filteredInitialsList.value = [];
+function cancelCategory1() {
+  selectedCategory1.value = "";
+  filteredCategory2List.value = [];
+  filteredProductsList.value = [];
 }
-function filterProducts(initial: string) {
-  filteredProductsList.value = productsList.value.filter(x => x.initials === initial);
+function selectCategory2(category: string) {
+  selectedCategory2.value = category;
+  filteredCategory3List.value = [...new Set(productsList.value.filter(x => x.category1 === selectedCategory1.value && x.category2 == selectedCategory2.value).map(x => x.category3))];
+  if (filteredCategory3List.value.length === 0) {
+    filteredProductsList.value = productsList.value.filter(x => x.category1 === selectedCategory1.value && x.category2 === selectedCategory2.value);
+  }
+}
+function cancelCategory2() {
+  selectedCategory2.value = "";
+  filteredCategory3List.value = [];
+  filteredProductsList.value = [];
+}
+function selectCategory3(category: string) {
+  selectedCategory3.value = category;
+  filteredCategory4List.value = [...new Set(productsList.value.filter(x => x.category1 === selectedCategory1.value && x.category2 == selectedCategory2.value).map(x => x.category3))];
+  if (filteredCategory4List.value.length === 0) {
+    filteredProductsList.value = productsList.value.filter(x => x.category1 === selectedCategory1.value && x.category2 === selectedCategory2.value && x.category3 === selectedCategory3.value);
+  }
+}
+function cancelCategory3() {
+  selectedCategory3.value = "";
+  filteredCategory4List.value = [];
+  filteredProductsList.value = [];
+}
+function selectCategory4(category: string) {
+  selectedCategory4.value = category;
+  filteredProductsList.value = productsList.value.filter(x => x.category1 === selectedCategory1.value && x.category2 === selectedCategory2.value && x.category3 === selectedCategory3.value && x.category4 === selectedCategory4.value);
+}
+function cancelCategory4() {
+  selectedCategory4.value = "";
+  filteredProductsList.value = [];
 }
 function cancelSelectedProduct() {
   newProductName.value = '';
   selectedProduct.value = null;
   emit('productSelected', null);
-}
-function cancelFilteredProductsList() {
-  filteredProductsList.value = [];
 }
 // Fetch product data on mounted
 onBeforeMount(async () => {
@@ -139,10 +202,12 @@ onBeforeMount(async () => {
     });
     if (!response.ok) throw new Error('Product fetch failed.');
     productsList.value = await response.json();
-    const uniqueArray = [...new Set(productsList.value.map(x => x.initials[0] || ''))];
+    console.log(response);
+    console.log(productsList.value);
+    const uniqueArray = [...new Set(productsList.value.map(x => x.category1 || ''))];
 
     // 2. Sort them so English (A-Z) and Burmese (က-အ) display in correct alphabetical order
-    initialsList.value = uniqueArray.sort((a: string, b: string) => a.localeCompare(b, ['my', 'en']));
+    filteredCategory1List.value = uniqueArray.sort((a: string, b: string) => a.localeCompare(b, ['my', 'en']));
   } catch (err: unknown) {
     console.log(err)
     toast.add({ severity: 'error', summary: 'မအောင်မြင်ပါ', detail: 'ဒေတာ ဆွဲယူခြင်း မအောင်မြင်ပါ။', life: 3000 });
